@@ -73,7 +73,9 @@ $(\bar{*})$ is estimate values
 
 
 ### *IMU initialzation*
-
+$$argmin_{b_g}\sum^{N-1}_{i=1}||log((\Delta R_{i,i+1})Exp(J^g_\Delta Rb_g))^TR^{i+1}_{bw}R^i_{wb}||$$
 
 
 #### *scale and Gravity Approximation*
+
+***here is the most important point in the VIO-ORB_SLAM***
