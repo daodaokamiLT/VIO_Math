@@ -79,3 +79,38 @@ $$argmin_{b_g}\sum^{N-1}_{i=1}||log((\Delta R_{i,i+1})Exp(J^g_\Delta Rb_g))^TR^{
 #### *scale and Gravity Approximation*
 
 ***here is the most important point in the VIO-ORB_SLAM***
+
+$s$ is a scale factor when transforming between camera C and IMU B coordiante system:
+
+${}_wp_b$ is a vector in the w coordinate
+
+$${}_wp_b=s{}_wp_c+R_{wc}{}_cp_b$$
+
+$$s{}_wp^{i+1}_c=s{}_wp^i_{c}+{}_wv^i_b\Delta t_{i,i+1}+\frac{1}{2}g_w\Delta t^w_{i,i+1}+R^i_{wb}\Delta p_{i,i+1}+(R^i_{wc}-R^{i+1}_{wc}){}_cp_b$$
+
+$$s{}_wp_c^{i+1}-\frac{1}{2}g_w\Delta t^2_{i,i+1}=s{}_wp^i_{c}+{}_wv^i_b\Delta t_{i,i+1}+R^i_{wb}\Delta p_{i,i+1}+(R^i_{wc}-R^{i+1}_{wc}){}_cp_b$$
+<!-- 当存在多个关键帧存在时，可以联立求解 -->
+
+how to estimate the $s$ and $g_w$ by solving a linear system of equations on those variables. 
+ 
+$$[\lambda](i), \beta(i)]\left[\begin{matrix}
+    s \\ g_w
+\end{matrix}\right]$$
+
+keyframe $i$,$i+1$,$i+2$ as 1,2,3 for clarity of notation, we have.
+
+$$\lambda(i)=({}_wp^2_c-{}_wp^1_c)\Delta t_{23} - ({}_wp^3_c - {}_wp^2_c)\Delta t_{12}$$
+
+$$\beta(i) = \frac{1}{2}I_{3\times 3}(\Delta t^2_{12}\Delta t_{23}+\Delta t^2_{23}\Delta t_{12})$$
+
+$$\gamma(i)=(R^2_wc - R^1_wc){}_cp_b\Delta t_{23} - (R^2_{wc}\\
+            -R^2_{wc}{}_cp_b\Delta t_{12}+R^2_{wb}\Delta p_{23}\Delta t_{12} \\+R^1_{wb}\Delta v_{12}\Delta t_{12}\Delta t_{23}-R^1_{wb}\Delta p_{12}\Delta t_{23}$$
+
+#### Acc bias estimation and Scale and gravity direction refinement
+
+gravity magnitude $G$, 
+
+$$R_{wi} = Exp(\hat{v}\theta), \hat{v}=\frac{\hat{g_i}\times \hat{g_w}}{||\hat{g_i}\times \hat{g_w}||}, \theta = atan2(\hat{g_i}\times \hat{g_w}, \hat{g_i},\hat{g_w})$$
+
+express now the gravity vector as:
+$$g_w = R_{wi}\hat{g}_iG$$
