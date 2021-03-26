@@ -1,7 +1,5 @@
 # *Compare VINS and ORB_SLAM*
 
-## *VINS*
-
 
 
 ## *ORB_SLAM*
@@ -114,3 +112,64 @@ $$R_{wi} = Exp(\hat{v}\theta), \hat{v}=\frac{\hat{g_i}\times \hat{g_w}}{||\hat{g
 
 express now the gravity vector as:
 $$g_w = R_{wi}\hat{g}_iG$$
+
+
+
+
+## *VINS*
+$$P^{w}_{b_{k+1}}=P^w_{b_k}+v^w_{b_k}\Delta t_k + \int\int_{t\in [t_k, t_{k+1}]}(R^w_t(\hat{a}_t-b_{a_t}-n_a)-g^w)dt^2$$
+
+$$v^w_{b_{k+1}}=v^w_{b_k}+\int_{t\in [t_k, t_{k+1}]}(R^w_t(\hat{a}_t-b_{a_t}-n_a)-g^w)dt$$
+
+$$q^w_{b_{k+1}}=q^w_{b_k}\bigotimes \int_{t_k, t_{k+1}}\frac{1}{2}\omega(\hat(w)_t - b_{w_t}-n_w)q^{b_k}_tdt$$
+
+where 
+
+$$\omega = \left[\begin{matrix}
+    -w_{\times} & w \\ 
+    -w^T & 0=
+\end{matrix} \right], w_{times}=\left[\begin{matrix}
+    0 & -w_z & w_y \\
+    w_z & 0 & -w_x \\
+    -w_y & w_x & 0
+\end{matrix}\right]$$
+
+
+linear acceleration $\hat{a}$ and angular velocity $\hat{w}$ as follows:
+$$R^{b_k}_wp^w_{b_{k+1}}=R^{b_k}_w(p^w_{b_k}+v^w_{b_k}\Delta t -\frac{1}{2}g^2\Delta t^2_k)+\alpha^{b_k}_{b_{k+1}}$$
+
+$$R^{b_k}_wv^w_{b_{k+1}}=R^{b_{k+1}}_w(v^w_{b_k}-g^w_\Delta t_k)+\beta^{b_k}_{b_{k+1}}$$
+
+$$q^{b_k}_w\bigotimes q^w_{b_{k+1}}=\gamma^{b_k}_{b_{k+1}}$$
+
+where:
+$$\alpha^{b_k}_{b_{k+1}}=\int\int_{t\in[t_k, t_{k+1}]}R^{b_k}_t(\hat{a}_t-b_{a_t}-n_a)dt^2$$
+
+$$\beta^{b_k}_{b_{k+1}}=\int_{t\in[t_k, t_{k+1}]}R^{b_k}_t(\hat{a}_t-b_{a_t}-n_a)dt$$
+
+$$\gamma^{b_k}_{b_{k+1}}=\int_{t\in[t_k, t_{k+1}]}\frac{1}{2}\omega(\hat{w}_t-b_{a_t}-n_w)dt$$
+
+### how the preintergate work
+#### basic quaternion
+$$exp(\phi^\times)=I+\frac{sin(||\phi||)}{||\phi||}\phi^\times+\frac{1-cos(||\phi||)}{||\phi||}(\phi^\times)^2$$
+
+当$\phi$是小量时，有一阶近似：
+$$exp(\phi^\times)\approx I+\phi^\times$$
+
+对数映射，将$SO(3)$中的元素映射到$so(3)$上：
+$$log(R)=\frac{\psi（R-R^T）}{2sin(\psi)}$$
+
+where 
+$$\psi=cos^{-1}(\frac{tr(R)-1}{2})$$
+
+有$vec(\log(R))=\psi a$,其中$\psi$为旋转角，$a$为旋转轴的单位矢量，有$a=vec(\left[\frac{R-R^T}{2sin(\psi)}\right])$
+
+$$R(t+\Delta t)=R(t)Exp((\tilde{w}(t)-b^g(t)-\eta^{gd}(t))\Delta t)$$
+
+$$v_(t+\Delta t)=v(t)+a^w(t))\Delta t\\
+=v(t)+R(t)(\tilde{f}(t)-b_a(t)-\eta_{ad}(t))\Delta t + g\Delta t$$
+
+$$p(t+\Delta t) = p(t)+v(t)\Delta t+\frac{1}{2}a^w(t)\Delta t^2 \\ = p(t) + v(t) \Delta t+ \frac{1}{2}\left[R(t)(\tilde{f}(t)-b_a^t-\eta_{ad}(t))+g \right]\Delta t^2 \\
+= p(t)+v(t)\Delta t + \frac{1}{2}\left[R(t)(\tilde{f}(t)-b_a(t)-\eta_{ad}(t)) \Delta t^2\right]$$
+
+
