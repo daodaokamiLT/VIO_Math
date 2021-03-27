@@ -173,3 +173,23 @@ $$p(t+\Delta t) = p(t)+v(t)\Delta t+\frac{1}{2}a^w(t)\Delta t^2 \\ = p(t) + v(t)
 = p(t)+v(t)\Delta t + \frac{1}{2}\left[R(t)(\tilde{f}(t)-b_a(t)-\eta_{ad}(t)) \Delta t^2\right]$$
 
 
+噪声项是$\eta_{gd}$,$\eta_{ad}$他们与连续噪声项目，$\eta_g$和$\eta_a$是不同的，存在关系：
+$$Cov(\eta_{gd}(t)) = \frac{1}{\Delta t}Cov(\eta_g(t))$$
+$$Cov(\eta_{ad}(t)) = \frac{1}{\Delta t}Cov(\eta_a(t))$$
+
+
+用 $i$到$j-1$时间段内的所有imu数据进行预积分，当$i$时刻状态完成初始化后，直接更新得到$k=j$时刻的状态。
+
+$$R_j=R_i\prod^{j-1}_{k=i} Exp((\tilde{w}_k-b_k^g-\eta^{gd}_k)\Delta t)$$
+
+$$v_j=v_i+g\Delta t_{ij}+\sum^{j-1}_{k=i}R_k(\tilde{f}_k-b^a_k-\eta^{ad}_k)\Delta t$$
+
+$$p_j=p_i+\sum^{j-1}_{k=i}\left[v_k\Delta t+\frac{1}{2}g\Delta t^2+\frac{1}{2}R_k(\tilde{f}_k-b_k^a-\eta_k^{ad})\Delta t^2 \right]$$
+
+修改如上公式如下，转换成预积分模式：
+$$\Delta R_{ij} = R^T_iR_j \\
+                = \prod^{j-1}_{k=i}Exp((\tilde{w}_k-b^g_k-\eta^{gd}_k)\Delta t)$$
+
+$$\Delta v_{ij}=R^T_i(v_j-v_i-g\Delta t_{ij}) \\ 
+    = \sum^{j-1}_{k=i}\Delta R_{ik}(v_i)$$
+
