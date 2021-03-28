@@ -190,6 +190,32 @@ $$p_j=p_i+\sum^{j-1}_{k=i}\left[v_k\Delta t+\frac{1}{2}g\Delta t^2+\frac{1}{2}R_
 $$\Delta R_{ij} = R^T_iR_j \\
                 = \prod^{j-1}_{k=i}Exp((\tilde{w}_k-b^g_k-\eta^{gd}_k)\Delta t)$$
 
-$$\Delta v_{ij}=R^T_i(v_j-v_i-g\Delta t_{ij}) \\ 
-    = \sum^{j-1}_{k=i}\Delta R_{ik}(v_i)$$
+$$\Delta v_{ij}=R^T_i(v_j-v_i-g\Delta t_{ij}) how-to-get-this-result$$
+prove:
+$$
+    \Delta v_{ij} = (v_j - v_i) = g\Delta t_{ij} + \sum^{j-i}_{k=i}R_k(\tilde{f_k}-b^a_k-\eta^{ad}_k)\Delta t\\ 
+    (split) = g(\Delta t_{i,i+1}+\Delta t_{i+1,i+2}+\cdots)\\+R_i(\tilde{f_i}-b^a_i-\eta^{ad}_i)\Delta t_{i,i+1}\\+R_{i+1}(\tilde{f_{i+1}}-b^a_{i+1}-\eta^{ad}_{i+1})\Delta t_{i+1,i+2}+\cdots \\
+    = g(\Delta t_{i,i+1}+\Delta t_{i+1,i+2}+\cdots) \\
+    + R_i(\tilde{f_i}-b^a_i-\eta^{ad}_i)\Delta t_{i,i+1})\\
+    + R_i*\Delta R_{i,i+1}(\tilde{f_{i+1}}-b^a_{i+1}-\eta^{ad}_{i+1})\Delta t_{i+1,i+2})+\cdots$$
+
+not proved!!!
+
+$$\Delta v_{ij}= R^T_i(v_j-v_i-g\Delta t_{ij}) how-to-get-this-result\\
+                = R^T_i(v_j-v_i-g\Delta t_{ij}) \\
+                = R^T_i \sum^{j-1}_{k=i}R_k(\tilde{f}_k-b_k^a-\eta^{ad}_k)\Delta t \\
+                = \sum^{j-1}_{k=i}\Delta R_{ik}(\tilde{f_k}-b^a_k-\eta^{ad}_k)\Delta t$$
+
+<!-- the speed can be calculated by the split the g and the init i status-->
+
+so $p$ can be cal like these:
+
+$$\Delta p_{ij} = R^T_i(p_j - p_i-v_i\Delta t_{ij} - \frac{1}{2}g\Delta t^2)\\
+= R^T_i(\sum^{j-1}_{k=i}\left[v_k\Delta t + \frac{1}{2}g\Delta t^2 +\frac{1}{2}R_k(\tilde{f}_k-b^a_k-\eta^{ad}_k)\Delta t^2 \right]-v_i\Delta t_{ij}-\frac{1}{2}g\Delta t_{ij}^2) \\ 
+= use-the-function-\Delta v_{ij}\\
+=R^T_i(\sum^{j-1}_{k=i}\left[v_{ik}\Delta t +\frac{1}{2}R_k(\tilde{f}_k-b^a_k-\eta^{ad}_k)\Delta t^2  \right])$$
+
+<!-- 其中最重要的是在融合进v & g的过程中的变化，用到了 -->
+
+通过简单的变形，将$\Delta v_{ij}$和$\Delta p_{ij}$转换成无$v_i$无关的样式。
 
