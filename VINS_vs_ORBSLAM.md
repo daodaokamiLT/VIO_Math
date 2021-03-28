@@ -229,4 +229,42 @@ $$\Delta R_{ij} = \prod^{j-1}_{k=i}Exp((\tilde{w}_k-b^g_i)\Delta t - \eta^{gd}_k
 $$Exp(-\Delta\tilde{R}^T_{k+1,j}J^k_r \eta^{gd}_k\Delta t) = Exp(-\delta\phi_{ij})$$
 其中$\Delta \tilde{R}_{ij}$是旋转的预积分测量值，由陀螺仪测量值和对陀螺仪bias的估计或猜测计算得到，认为$\delta \phi_{ij}$为其测量的噪声。
 
+
+
+推到: 
+$$\prod^{j-1}_{k=i} Exp(-J_r((\tilde{w}_k)-b^g_i)\Delta t)\eta^{gd}_k\Delta t =\prod^{j-1}_{k=i}Exp(-\Delta\tilde{R}^T_{k+1,j}J^k_r\eta^{dg}_k\Delta t)$$
+
+当$\delta \phi$是小量的时候
+
+$$Exp(\phi + \delta \phi) \approx Exp(\phi)Exp(J_r(\phi)\delta \phi)$$
+
+adjoint 性质
+
+$$Exp(\phi)R = RExp(R^T\phi)$$
+
+令 $J^k_r = J_r((\tilde{w})_k-b^g_i)\Delta t$, 再令 $\Delta \tilde{R}_{ij} = \prod^{j-1}_{k=i} Exp((\tilde{w}_k-b^g_i)\Delta t)$和$Exp(-\delta \phi_{ij})=\prod^{j-1}_{k=i}Exp(-\Delta\tilde{R}^T_{k+1,j}J^k_r\eta^{gd}_k\Delta t)$
+
+
+$$\Delta v_i = \sum^{j-1}_{k=i}\Delta R_{ik} (\tilde{f_k}-b^a_i-\eta^{ad}_k)\Delta t \\ 
+ \approx \sum^{j-1}_{k=i}\Delta \tilde{R}_{ik}Exp(-\delta\phi_{ik})(\tilde{f_k}-b^a_i-\eta^{ad}_k)\Delta t \\
+ \approx \sum^{j-1}_{k=i}\Delta \tilde{R}_{ik}(I-\delta\phi^{\times})(\tilde{f_k}-b^a_i-\eta^{ad}_k)\Delta t \\ 
+ \approx \sum^{j-1}_{k=i}\left[ \Delta\tilde{R}_{ik}(I-\delta\phi^{\times})(\tilde{f}_k-b^a_i)\Delta t - \Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t\right] \\
+ =\sum^{j-1}_{k=i}\left[\Delta\tilde{R}_{ik}(\tilde{f}_k - b^a_i)\Delta t+\Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i)^{\times}\delta\phi_{ik}\Delta t - \Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t \right] \\
+ =\sum^{j-1}_{k=i}\left[\Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i)\Delta t \right]+\sum^{j-1}_{k=i}\left[\Delta \tilde{R}_{ik}(\tilde{f}_k-b^a_i)^{\times}\phi_{ik}\Delta t- \Delta \tilde{R}_{ik}\eta^{ad}_k\Delta t \right]$$
+
+将该公式忽略高阶小项，以及用简略的方式表示$\Delta v_{ij}$
+
+$$\Delta \tilde{v}_{ij} = \sum^{j-1}_{k=i}\left[\Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i)\Delta t \right]$$
+
+$$\delta v_{ij} = \sum^{j-1}_{k=i}\left[\Delta \tilde{R}_{ik}\eta^{ad}_k\Delta t- \Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i)^{\times}\delta \phi_{ik}\Delta t \right]$$
+
+### the important
+$$\Delta v_{ij} = \Delta \tilde{v}_{ij} - \delta \phi_{ij}$$
+
+
+
+$$\Delta p_{ij} = \sum^{j-1}_{k=i}\left[\Delta v_{ik}\Delta t + \frac{1}{2}\Delta R_{ik}(\tilde{f}-b^a_i-\eta^{ad}_k)\Delta t^2\right] \\
+同理带入上式子可以得到并拆分成\\
+\approx\ sum^{j-1}_{k=i}\left[(\Delta\tilde{v}_{ik}-\delta v_{ik})\Delta t + \frac{1}{2}\Delta\tilde{R}_{ik}(I-\delta\phi_{ik})\Delta t^2 - \frac{1}{2}\Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t^2 \right] \\$$
+
 #### bias更新时的积分测量值更新
