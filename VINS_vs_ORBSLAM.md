@@ -219,3 +219,14 @@ $$\Delta p_{ij} = R^T_i(p_j - p_i-v_i\Delta t_{ij} - \frac{1}{2}g\Delta t^2)\\
 
 通过简单的变形，将$\Delta v_{ij}$和$\Delta p_{ij}$转换成无$v_i$无关的样式。
 
+#### 预积分测量值和测量噪声
+将噪声项$\eta^{gd}_k$，$\eta^{ad}_k$从预计分中分离，是的预积分测量值，由IMU测量数据计算得到。认为预积分计算区间内的bias相等，即$b^g_i=b^g_{i+1}=\cdots=b^g_j$
+
+$$\Delta R_{ij} = \prod^{j-1}_{k=i}Exp((\tilde{w}_k-b^g_i)\Delta t - \eta^{gd}_k\Delta t) \\ 
+\approx \prod^{j-1}_{k=i} \left\{Exp((\tilde{w_k}-b^g_i)\Delta t * Exp(-J_r((\tilde{w}_k - b^g_i))\Delta t)\eta^{gd}_k\Delta t \right\} \\
+= \Delta \tilde{R}_{ij} \prod^{j-1}_{k=i}Exp(-\Delta\tilde{R}^T_{k+1,j}J^k_r \eta^{gd}_k\Delta t)$$
+
+$$Exp(-\Delta\tilde{R}^T_{k+1,j}J^k_r \eta^{gd}_k\Delta t) = Exp(-\delta\phi_{ij})$$
+其中$\Delta \tilde{R}_{ij}$是旋转的预积分测量值，由陀螺仪测量值和对陀螺仪bias的估计或猜测计算得到，认为$\delta \phi_{ij}$为其测量的噪声。
+
+#### bias更新时的积分测量值更新
