@@ -134,9 +134,65 @@ $$\omega = \left[\begin{matrix}
     -w_y & w_x & 0
 \end{matrix}\right]$$
 
+at the begin $\alpha^{b_l}_{b_k}$,$\beta^{b_k}_{b_k}$,$\gamma^{b_k}_{b_k}$ is 0, 0, Identity quaternion. these values is propagated step by step as follow.
+
+$$\hat{\alpha}^{b_k}_{i+1}=\hat{\alpha}^{b_k}_i+\hat{\beta}^{b_k}_i\delta t+\frac{1}{2}R(\hat{\gamma}^{b_k}_i)(\hat{a}_i-b_{a_i})\delta t^2$$
+
+$$\hat{\beta^{b_k}_{i+1}}=\hat{\beta}^{b_k}_i+R(\hat{\gamma}^{b_k}_i)(\hat{a}_i-b_{ai}\delta t)$$
+
+$$\hat{\gamma}^{b_k}_{i+1} = \hat{\gamma}^{b_k}_i\bigotimes\left[\begin{matrix}
+    1 \\ \frac{1}{2}(\hat{w}_i - b_{wi}\delta t)
+\end{matrix} \right]$$
+
+$$\gamma^{b_k}_t\approx\hat{\gamma}^{b_k}_t\bigotimes\left[\begin{matrix}
+    1 \\ \frac{1}{2}\delta \theta^{b_t}_t
+\end{matrix}\right]$$
+the $\delta \theta^{b_k}_t$ is three-dimensinal small perturbation.
+
+
+the error terms is 
+$$\left[\begin{matrix}
+    \delta \dot{\alpha}^{b_k}_t \\ 
+    \delta \dot{\beta}^{b_k}_t \\ 
+    \delta \dot{\theta}^{b_k}_t \\ 
+    \delta \dot{b}_t{a_t} \\ 
+    \delta \dot{b}_{w_t} \\ 
+\end{matrix} \right] = \left[\begin{matrix}
+    0 &I &0 &0 &0 \\ 
+    0 &0 &-R^{b_k}_tvec(\hat{a}_t - b_{a_t}) &-R^{b_k}_t &0 \\
+    0 &0 &-vec(\hat{w}_t-b_{w_t}) &0 &-I\\
+    0 &0 &0 &0 &0 \\
+    0 &0 &0 &0 &0
+\end{matrix} \right] \left[\begin{matrix}
+    \delta {\alpha}^{b_k}_t \\ 
+    \delta {\beta}^{b_k}_t \\ 
+    \delta {\theta}^{b_k}_t \\ 
+    \delta {b}_t{a_t} \\ 
+    \delta {b}_{w_t} \\ 
+\end{matrix} \right] +\left[\begin{matrix}
+    0 &0 &0 &0 \\
+    -R^{b_t}_t &0 &0 &0 \\
+    0 &-I &0 &0 \\
+    0 &0 &-I &0 \\
+    0 &0 &0 &0 
+\end{matrix} \right]\left[\begin{matrix}
+    n_a \\ n_w \\ n_{b_a}\\ n_{b_w}
+\end{matrix} \right]$$
+
+
+
+### VINS init is the most important partion
+
+
+
+
+
+
 
 linear acceleration $\hat{a}$ and angular velocity $\hat{w}$ as follows:
 $$R^{b_k}_wp^w_{b_{k+1}}=R^{b_k}_w(p^w_{b_k}+v^w_{b_k}\Delta t -\frac{1}{2}g^2\Delta t^2_k)+\alpha^{b_k}_{b_{k+1}}$$
+
+
 
 $$R^{b_k}_wv^w_{b_{k+1}}=R^{b_{k+1}}_w(v^w_{b_k}-g^w_\Delta t_k)+\beta^{b_k}_{b_{k+1}}$$
 
@@ -148,6 +204,13 @@ $$\alpha^{b_k}_{b_{k+1}}=\int\int_{t\in[t_k, t_{k+1}]}R^{b_k}_t(\hat{a}_t-b_{a_t
 $$\beta^{b_k}_{b_{k+1}}=\int_{t\in[t_k, t_{k+1}]}R^{b_k}_t(\hat{a}_t-b_{a_t}-n_a)dt$$
 
 $$\gamma^{b_k}_{b_{k+1}}=\int_{t\in[t_k, t_{k+1}]}\frac{1}{2}\omega(\hat{w}_t-b_{a_t}-n_w)dt$$
+
+### how to estimate the errors
+
+## Estimator Initialzation
+### sliding window vision-only sfm
+
+
 
 ### how the preintergate work
 #### basic quaternion
@@ -265,6 +328,7 @@ $$\Delta v_{ij} = \Delta \tilde{v}_{ij} - \delta \phi_{ij}$$
 
 $$\Delta p_{ij} = \sum^{j-1}_{k=i}\left[\Delta v_{ik}\Delta t + \frac{1}{2}\Delta R_{ik}(\tilde{f}-b^a_i-\eta^{ad}_k)\Delta t^2\right] \\
 同理带入上式子可以得到并拆分成\\
-\approx\ sum^{j-1}_{k=i}\left[(\Delta\tilde{v}_{ik}-\delta v_{ik})\Delta t + \frac{1}{2}\Delta\tilde{R}_{ik}(I-\delta\phi_{ik})\Delta t^2 - \frac{1}{2}\Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t^2 \right] \\$$
+\approx\ sum^{j-1}_{k=i}\left[(\Delta\tilde{v}_{ik}-\delta v_{ik})\Delta t + \frac{1}{2}\Delta\tilde{R}_{ik}(I-\delta\phi_{ik})\Delta t^2 - \frac{1}{2}\Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t^2 \right] \\
+= \sum^{j-1}_{k=i}\left[\Delta \tilde{v}_{ik}+\frac{1}{2}\Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i)\Delta t^2 +\frac{1}{2}\Delta\tilde{R}_{ik}(\tilde{f}_k-b^a_i) ^{\times}\delta\phi_{ik}\Delta t^2-\frac{1}{2}\Delta\tilde{R}_{ik}\eta^{ad}_k\Delta t^2 - \delta v_{ik}\Delta t \right]$$
 
 #### bias更新时的积分测量值更新
