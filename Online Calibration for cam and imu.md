@@ -60,7 +60,7 @@ status is $X=\left[x_0, x_1, \cdots,x_n,P_0,P_1,\cdots,P_l, t_d \right]$, the $x
 
 whole problem is formulated as one cost function containing IMU propagation factor, reprojection factor as well as a certain prior factor. So the paper use the next factor to achieve time offset calibration.
 depart is prior factor + imu propagation factor + proposd vision factor.
-$$\min_x\left\{\left|e_p-H_px \right| ^2 + \sum_{k\in B}\left|e_B(z^k_{k+1}, X) \right|^2_{P^k_{k+1}}+\sum_{(l,j)\in C}\left|e_C(z^j_l, X) \right|^2_{P^j_l}\right\}$$
+$$\min_x\left\{\left|e_p-H_pX \right| ^2 + \sum_{k\in B}\left|e_B(z^k_{k+1}, X) \right|^2_{P^k_{k+1}}+\sum_{(l,j)\in C}\left|e_C(z^j_l, X) \right|^2_{P^j_l}\right\}$$
 
 
 
