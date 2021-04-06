@@ -136,3 +136,57 @@ $$g_w \approx R_{wi}\hat{g}_I G - R_{wi}(\hat{g}_I)^{\times}G\delta\theta$$
 change status can like this:
 
 <img src="./ORB-VIO-init-estimateAccbias.png" width = 400>
+
+but the ORB-SLAM3 change the init partion:
+
+the method in ORB_SLAM-VIO(VI) is limited to pinhole monocular cameras and its initialization was too slow.
+
+
+## ORB-SLAM3
+1. formulation of vi initialzation as an inertial-only optimal esti problem. taking properly into account the probabilistic model of IMU noises.
+2. solve for all inertial params at once. this makes all estimations jointly consistent.
+3. don't make any assumptions about initial velocity or attitude, make out method suitable for any initialization case.
+4. don't assume IMU bias to be zero, instead get these infos by calib or Map estimation.
+
+Inertial-only optimization for visual-inertial Initialization
+
+goal is going one step further and also use MAP estimation 
+in the initialization, making proper use of sensor noise models.
+Our novel initialization method is based on the following ideas:
+
+1. Despite the non-linear nature of BA, Monocular SLAM is mature and robust enough to obtain very accurate initial solutions for structure and motion, with the only caveat that their estimations are up-to-scale.
+2. perform inertial-only MAP estimation, taking the up-to-scale visual SLAM trajectory as constant.
+3. adopt a parametrization that explicitly represents and optimizes the scale factor of the monocular SLAM solution.
+4. jointly optimize all the IMU variables in one step, taking into account the cross-covariances between the preintegrated terms for position, and linear and angular velocities.
+
+<img src="./orb-slam3-init.png" width = 400>
+
+### vision-only Map Estimation
+same as ORB-SLAM
+
+### Inertial-only Map Estimation
+status vector
+$$X_k=\left\{ s, R_{wg}, b, \overline v_{0:k}\right\}$$
+
+$b=\{b^a, b^g\}$ and other is defined as normal.
+
+<!-- the up-to-scale mean change to element? -->
+
+define $I_{i,j}$ as the preintegration of inertial measurements between i-th and j-th keyframe, and by $I_{0:k}$ the set of IMU preintegrations bwtween successive keyframes in our initialization window.
+
+the posterior distribution is:（后验概率）
+$$p(X_k|I_{0:k}) \infty p(I_{0:k}|X_k)p(X_k)$$
+
+where $p(I_{0:k}|X_k)$ is the likelihood distribution of the IMU measurements given the IMU states, and $p(X_k)$ is the prior for the IMU states. Considering independence of measurements, the likelihood can be factorizd as:
+
+$$p(I_{0:k}|X_k) = \prod^k_{i=1}p(I_{i-1, i}|s,g_{dir}, b, v)_{i-1}, v_i)$$
+
+To obtain the MAP estimator
+$$X^*_k = arg\max_{X_k}p(X_k|I_{0:k}) = arg\min_{X_k}\left(-log(p(X_k))-\sum^k_{i=1}log(p(I_{i-1,i}|s, g_{dir},b,v_{i-1}, v_i))\right)$$
+
+Assuming Gaussian error for IMU preintegration and prior distribution, the MAP problem is equivalent to:
+$$X^*_k = arg\min_{X_k}\left(||r_p||^2_{{\sum}_p}+\sum^k_{i=1}||r_{I_{i-1,i}}||^2_{\sum_{I_{i-1,i}}} \right)$$
+
+where $r_p$, $r_{I_{i-1,i}}$ are the residual of the prior and IMU measurements between consecutive keyframe, while $\sum_p$ and $\sum_{I_{i-1,i}}$ are their covariances.
+
+this function don't only inertial residuals. 
