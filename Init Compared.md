@@ -190,3 +190,145 @@ $$X^*_k = arg\min_{X_k}\left(||r_p||^2_{{\sum}_p}+\sum^k_{i=1}||r_{I_{i-1,i}}||^
 where $r_p$, $r_{I_{i-1,i}}$ are the residual of the prior and IMU measurements between consecutive keyframe, while $\sum_p$ and $\sum_{I_{i-1,i}}$ are their covariances.
 
 this function don't only inertial residuals. 
+
+redefine the inertial residual as:
+
+$$r_{I_{i,j}} = \left[r_{\Delta R_{ij}}, r_{\Delta v_{ij}}, r_{\Delta p_{ij}} \right]$$
+
+$$r_{\Delta R_{ij}} = Log(\Delta R_{ij}(b^g)^TR^T_iR^T_j)$$
+
+$$r_{\Delta v_{ij}} = R^T_i(s\overline{v}_j-s\overline{v}_i-R_{wg}g_I\Delta t_{ij})-\Delta v_{ij}(b^g, b^a)$$
+
+$$r_{\Delta P_{ij}} = R^T_i(s\overline{p}_j-s\overline{p}_i-s\overline{v}_i\Delta t_{ij}-\frac{1}{2}R_{wg}g_I\Delta t^2_{ij})-\Delta p_{ij}(b^g, b^a)$$
+
+the values of $\{\Delta R_{ij}(b^g), \Delta v_{ij}(b^g, b^a), \Delta p_{ij}(b^g, b^a)\}$ are preintegrated IMU measurements from i-th to j-th keyframe, which only depend on biases.
+
+after optimizing in a manifold we need to define a retraction to update the gravity direction estimation during the optimization:
+
+$$R^{new}_{wg}=R^{old}_{wg}Exp(\delta\alpha_g, \delta\beta_g. 0)$$
+
+and the scale factor $s$ change equation is:
+$$s^{new} = s^{old}exp(\delta s)$$
+
+### Visual-Inertial MAP Estimation
+depends on a new paper: *Fast and robust ini-tialization for visual-inertial SLAM*
+
+solve two main drawbacks.
+1. dependency on visual initialization.
+2. Initialization takes too long. 
+
+
+the method is from the Martinelli[1] 
+but the method has same limitations:
+1. assumes that all features are tracked in all frames, and that all tracks provided are correct. In case of spurious tracks, it can provide arbitrarily bad solutions.
+2. initialzation accuracy is low. if increase accuracy a lot of tracks and frams are needed, increasing computational cost.
+3. With noisy sensor, trajectories that are close to the unsolvable cases analyzed.
+
+
+
+### how to solve this problem?
+Generality: use partial tracks and to take into account the camera-IMU relative pose.
+
+Efficiency:fixed number of m features and n keyframes carefully chosen, and adopting the preintegration method proposed.
+
+
+## INITIAL Solution:
+
+A. Feature extraction and tracking
+
+.....
+
+B. Modified Marinelli-Kaiser solution
+
+set of the equalities:
+
+$$p_{1_i}+R_{1_i}t_{BC}+\lambda^i_{1_i}u^i_{1_i} = p_j + R_jt_{BC}+\lambda^i_ju^i_j \\ i=1,\cdots,m, \forall j \in C^i/1_i$$
+
+$p_j \in \R^3$ position of j-th body in the global reference frame.
+
+$\lambda^i_j$: distance between i-th feature and j-th camera.
+
+$u^i_j$: unitary vector from j-th camera to i-th feature in the global reference frame. can be computed as $u^i_j=R_jR_{BC}{}_{c_j}u^i_j$, being ${}_{c_j}u^i_j$ the unitary vector in the j-th camera reference frame for the i-th feature.
+
+
+$[R_{BC}|t_{BC}]$: transfrom from camera to Body(IMU)
+
+the value $R_j$ and $P_j$ can be compute by integrating the inertial measurements.
+<img src="./FastandRobustInit_integrate.png" >
+
+<img src="./FastandRobustInit_integrate1.png">
+
+
+a important check:
+
+if (during intemediate steps $b^g$ changes more than 0.2 rad/src from the value used for preintegration){
+
+    the preintegration is recomputed with this new bias
+    
+} 
+
+else{
+
+    delta terms are directly updated using their Jacobians w.r.t biases.
+
+}
+
+
+the Jacobians is:
+
+$$\left(\frac{\partial\Delta R_{1,j}}{\partial b^g},  \frac{\partial\Delta v_{1,j}}{\partial b^g}, \frac{\partial\Delta v_{1,j}}{\partial b^a}, \frac{\partial\Delta p_{1,j}}{\partial b^g}, \frac{\partial\Delta p_{1,j}}{\partial b^a}\right)$$
+
+将第一个等式重写，将后面的$\Delta*$带入等式，得到如下结果：
+
+$$\lambda^i_{1_i}u^i_{1_i}-\lambda^i_ju^i_j - v_1\Delta t_{1i,j}-g(\frac{\Delta t^2_{1,j}-\Delta t^2_{1,1_i}}{2})=\Delta p_{1,j}-\Delta p_{1,1_i}+(\Delta R_{1,j}-\Delta R_{1,1_i})t_{BC} \\ \forall i = 1,\cdots, m, \forall j \in C^i/1_i$$
+
+add graivty magnitude infors, $g = Exp(\alpha, \beta, 0)g_I$
+
+Equation becomes:
+
+$$\lambda^i_{1_i}u^i_{1_i}- \lambda^i_ju^i_j - v_1\Delta t_{1_i, j} = s_{1_i, j}(b^g, b^a, \alpha, \beta)$$
+
+where $s_{1_i, j}(b^g, b^a, \alpha, \beta) \\= Exp(\alpha, \beta, 0)g_I(\frac{\Delta t^2_{1,j}-\Delta t^2_{1,1_i}}{2})+\Delta p_{1,j}-\Delta p_{1,1_i}+(\Delta R_{1,j}-\Delta R_{1,1_i})t_{BC}$
+
+just to update them by means of Jacobians.
+
+
+ignore the $b^a$
+
+make the equaltion simplify to $A(b^g)x = s(b^g, \alpha, \beta)$. where $x = (v_1, \{\lambda^i_j\})$. we solve the next unconstrained minimization problem.
+
+$$(b^g, \alpha, \beta) = arg\min_{b^g, \alpha, \beta}(\min_{x}||A(b^g)x-s(b^g, \alpha, \beta)||^2_2)$$
+
+using the following scheme:
+<img src="./FastandRobustInit_costfunction_followscheme.png">
+
+#### the main problem is bias update, the preintegration result should update, here is cost too much.
+
+***the change point is to update by using Jacobians.***
+
+## imporve solution
+
+***A.*** First BA and Observability test
+<img src="./FastandRobustInit_FirstBA.png">
+solve the problem, when init at low observability the optimization can convergeto arbitrarily bad solutions.
+
+happened when pure rotation and non-accelerated motions.
+
+Inorder  to  detect  these  failure  cases  we  propose  anobserv-ability  test,  where  we  analyze  the  uncertainty  associated  toestimated  variables.  This  could  be  done  by  analyzing  thecovariance matrix of the estimated variables and checking ifits  singular  values  are  small  enough.  However,  this  wouldrequire  to  invert  the  information  matrix,  i.e.  the  Hessianmatrix fromfirst BA, which has high dimensions (3m+ 6 +9n−4),  being  computationally  too  expensive.  Instead,  weperform the observability test imposing a minimal thresholdto all singular values of the Hessian matrix associated to ourfirst BA. The Hessian can be built from the Jacobian matricesassociated to each edge in the graph, as explained next.
+
+增加了一个信息矩阵，能够分辨可能存在较差初始化的情况，并且该信息矩阵规模更小，计算速度更快。
+
+
+$$H_{i,j}\approx \sum_{e \in \epsilon_i and \epsilon_j}J^T_{i,e}\Omega_eJ_{j,e}$$
+<img src="./FastandRobustInit_FirstBA1.png">
+<img src="./FastandRobustInit_FirstBA2.png">
+<img src="./FastandRobustInit_Hthreshold.png">
+
+
+***B.*** Consensus test and Second BA
+
+***C.*** Map Initialization
+
+
+## reference
+[1] losed-form  solution  of  visual-inertial  structure  frommotion
